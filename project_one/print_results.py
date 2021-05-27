@@ -76,10 +76,10 @@ def print_results(results_dic, results_stats_dic, model,
         print('\nIncorrect Dogs')
         for entry in results_dic.keys():
             if sum(results_dic[entry][3:]) == 1:
-                print(results_dic[entry])
+                print('Pet Label: {:>25}   Classifier Label: {:>34}'.format(results_dic[entry][0], results_dic[entry][1]))
         
     if print_incorrect_breed:
         print('\nIncorrect Breeds')
         for entry in results_dic.keys():
-            if sum(results_dic[entry][3:]) == 1 and results_dic[entry][2] == 0:
-                print(results_dic[entry])
+            if sum(results_dic[entry][3:]) == 2 and results_dic[entry][2] == 0:
+                print("Real: {:>30}   Classifier: {:>40}".format(results_dic[entry][0],results_dic[entry][1]))

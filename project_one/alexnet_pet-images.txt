@@ -81,7 +81,7 @@ Real:             great pyrenees   Classifier:                 Great Pyrenees
       Cocker_spaniel_03750.jpg: 
 Real:             cocker spaniel   Classifier: cocker spaniel, English cocker spaniel, cocker
 
-             Basenji_00963.jpg: 
+             basenji_00963.jpg: 
 Real:                    basenji   Classifier:                        basenji
 
                  skunk_029.jpg: 
@@ -228,7 +228,7 @@ PetLabelDog: 1  ClassLabelDog: 1
 Real:             cocker spaniel   Classifier: cocker spaniel, English cocker spaniel, cocker  
 PetLabelDog: 1  ClassLabelDog: 1
 
-             Basenji_00963.jpg: 
+             basenji_00963.jpg: 
 Real:                    basenji   Classifier:                        basenji  
 PetLabelDog: 1  ClassLabelDog: 1
 
@@ -323,5 +323,11 @@ Number of images: 40 | Number of Dog Images: 30 | Number of Not-a-Dog Images: 10
 Incorrect Dogs
 
 Incorrect Breeds
+Real:               golden retriever   Classifier:                          Tibetan mastiff
+Real:                 great pyrenees   Classifier:                                   kuvasz
+Real:                 boston terrier   Classifier:                                  basenji
+Real:                         beagle   Classifier:            Walker hound, Walker foxhound
+Real:                         beagle   Classifier:                         English foxhound
+Real:               golden retriever   Classifier:                     Afghan hound, Afghan
 
 ** Total Elapsed Runtime: 0:0:3

@@ -87,7 +87,7 @@ Real:             great pyrenees   Classifier:                 Great Pyrenees
       Cocker_spaniel_03750.jpg: 
 Real:             cocker spaniel   Classifier: cocker spaniel, English cocker spaniel, cocker
 
-             Basenji_00963.jpg: 
+             basenji_00963.jpg: 
 Real:                    basenji   Classifier:                        basenji
 
                  skunk_029.jpg: 
@@ -236,7 +236,7 @@ PetLabelDog: 1  ClassLabelDog: 1
 Real:             cocker spaniel   Classifier: cocker spaniel, English cocker spaniel, cocker  
 PetLabelDog: 1  ClassLabelDog: 1
 
-             Basenji_00963.jpg: 
+             basenji_00963.jpg: 
 Real:                    basenji   Classifier:                        basenji  
 PetLabelDog: 1  ClassLabelDog: 1
 
@@ -321,9 +321,11 @@ Number of images: 40 | Number of Dog Images: 30 | Number of Not-a-Dog Images: 10
 % Correct Dogs: 100.0 | % Correct Breeds:  90.0 | % Correct Not-a-Dogs:  90.0 | % Match:  82.5
 
 Incorrect Dogs
-['cat', 'Norwegian elkhound, elkhound', 0, 0, 1]
+Pet Label:                       cat   Classifier Label:       Norwegian elkhound, elkhound
 
 Incorrect Breeds
-['cat', 'Norwegian elkhound, elkhound', 0, 0, 1]
+Real:               golden retriever   Classifier:                                 Leonberg
+Real:                 great pyrenees   Classifier:                                   kuvasz
+Real:                         beagle   Classifier:            Walker hound, Walker foxhound
 
 ** Total Elapsed Runtime: 0:0:5
