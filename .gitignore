@@ -127,5 +127,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/project_one/pet_images
+/projects/python/pet_images
 AIPND-master
