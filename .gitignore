@@ -132,3 +132,4 @@ AIPND-master
 /neural_networks/pytorch/checkpoint.pth
 flowers
 Cat_Dog_data
+*.pth
