@@ -1,4 +1,10 @@
+import torch
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
 
+#from torchvision import datasets, transforms, models
+#from collections import OrderedDict
 
 def process_image(image):
     ''' Scales, crops, and normalizes a PIL image for a PyTorch model,
@@ -60,7 +66,7 @@ def imshow(image, ax=None, title=None):
     return ax
 
 
-def predict(image_path, model, topk=5):
+def predict(image_path, model, topk, device):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
     

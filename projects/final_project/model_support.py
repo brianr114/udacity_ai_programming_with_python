@@ -1,12 +1,111 @@
 import torch
+import time
 import numpy as np
-import matplotlib.pyplot as plt
 
 from torch import nn
 from torch import optim
 from torchvision import datasets, transforms, models
 from collections import OrderedDict
-from PIL import Image
+
+
+
+# Define your transforms for the training, validation, and testing sets
+train_transforms = transforms.Compose([transforms.RandomRotation(30),
+                                        transforms.RandomResizedCrop(224),
+                                        transforms.RandomHorizontalFlip(),
+                                        transforms.ToTensor(),
+                                        transforms.Normalize([.485, .456, .406],
+                                                            [.229, .224, .225])])
+
+validation_test_transforms = transforms.Compose([transforms.Resize(255),
+                                                    transforms.CenterCrop(224),
+                                                    transforms.ToTensor(),
+                                                    transforms.Normalize([.485, .456, .406],
+                                                                        [.229, .224, .225])])
+
+def load_train_data(data_dir, batch_size):
+    # Load the datasets with ImageFolder
+    train_dir = data_dir + '/train'
+    valid_dir = data_dir + '/valid'
+
+    train_data = datasets.ImageFolder(train_dir, transform=train_transforms)
+    validate_data = datasets.ImageFolder(valid_dir, transform=validation_test_transforms)
+
+    # Using the image datasets and the trainforms, define the dataloaders
+    data = {}
+    data['train'] = torch.utils.data.DataLoader(train_data, shuffle=True, batch_size=batch_size)
+    data['validate'] = torch.utils.data.DataLoader(validate_data, batch_size=batch_size)
+    return data, train_data.class_to_idx
+
+def load_test_data(data_dir, batch_size):
+    # Load the datasets with ImageFolder
+    test_dir = data_dir + '/test'
+
+    test_data = datasets.ImageFolder(test_dir, transform=validation_test_transforms)
+
+    # Using the image datasets and the trainforms, define the dataloaders
+    return torch.utils.data.DataLoader(test_data, batch_size=batch_size)
+
+def train(model, optimizer, criterion, epochs, device, data):
+    # Put model in training mode
+    model.train()
+
+    # Send model to defined device
+    model.to(device)
+    for e in range(epochs):
+        start_time = time.time()
+        train_loss = 0
+            
+        for images, labels in data['train']:
+        
+            # Send training to device
+            images, labels = images.to(device), labels.to(device)
+        
+            # Initialize optimizer
+            optimizer.zero_grad()
+        
+            # Send training data to model, compute loss, and calcuate gradients
+            log_ps = model.forward(images)
+            loss = criterion(log_ps, labels)
+            loss.backward()
+            optimizer.step()
+            train_loss += loss.item()
+        
+        # Perform validation every n steps and print results
+        else:
+            validation_loss = 0
+            accuracy = 0
+
+            # Put model in eval mode and disable gradient calculation to run faster
+            model.eval()
+            with torch.no_grad():
+                for images, labels in data['validate']:
+
+                    # Send data to device
+                    images, labels = images.to(device), labels.to(device)
+
+                    # Run model and calculate loss
+                    log_ps = model.forward(images)
+                    validation_loss += criterion(log_ps, labels).item()
+
+                    # Calculate highest probability class and determine if there is a match
+                    ps = torch.exp(log_ps)
+                    top_p, top_class = ps.topk(1, dim=1)
+                    equals = top_class == labels.view(*top_class.shape)
+                    accuracy += torch.mean(equals.type(torch.FloatTensor)).item()
+
+            print(f"Epoch {e+1:0>2d}/{epochs:0>2d} |",
+                  f"Training Loss: {train_loss/len(data['train']):.3f} |",
+                  f"Validation Loss: {validation_loss/len(data['validate']):.3f} |",
+                  f"Accuracy: {accuracy / len(data['validate']):.3f} |",
+                  f"Cycle Time: {int(round((time.time() - start_time) / 60)):0>3d} minutes")
+
+            # Put model back into training mode
+            model.train()
+
+            # If accuracy exceeds threshold, save model and exit training
+            if (accuracy / len(data['validate'])) > .8:
+                break;
 
 # Save the checkpoint 
 def save_model(file_path, model, hidden_layers, class_to_idx, optimizer, epochs):
@@ -117,8 +216,7 @@ def create_model(arch='densenet121', hidden_layers=None, lr=.003, class_to_idx=N
     criterion = nn.NLLLoss()
     
     return model, optimizer, criterion
-    
-
+ 
 def load_model(filepath, lr=.003):
     """
     Loads a previously saved model.
@@ -128,13 +226,15 @@ def load_model(filepath, lr=.003):
     """
     # Load model checkpoint file
     checkpoint = torch.load(filepath)
-    
+
     # Load model
     model, optimizer, criterion = create_model(checkpoint['arch'], checkpoint['hidden_layers'], lr)
     
     # Load model parameters from checkpoint file
+
     model.load_state_dict(checkpoint['state_dict'])
     model.class_to_idx = checkpoint['class_to_idx']
+
     
     # Load optimizer parameters
     optimizer.load_state_dict(checkpoint['optimizer'])
