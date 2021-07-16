@@ -1,5 +1,9 @@
 import argparse
 
+"""
+Defines arg parsing functions for train and predict scripts.
+"""
+
 def get_training_args():
     parser = argparse.ArgumentParser()
 
@@ -21,11 +25,17 @@ def get_predict_args():
     parser.add_argument('--image_path', type = str, default = './flowers/test/28/image_05214.jpg', help = "Path of file to predict: default='./flowers/test/28/image_05214.jpg'")
     parser.add_argument('--model_checkpoint', type = str, default = 'checkpoint.pth', help = "'Path to checkpoint file: default='checkpoint.pth'")
     parser.add_argument('--topk', type = int, default = 5, help = 'Top k classes: default=5')
+    parser.add_argument('--class_map', type = str, default = 'cat_to_name.json', help = "Maps class values to category names: default='cat_to_name.json'")
 
     return parser.parse_args()
 
 # Ref https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
 def string_to_bool(v):
+    """
+    Converts a boolean string to boolean True or False.
+    Input:  Value string
+    Output: Boolean
+    """
     if isinstance(v, bool):
         return v
     elif v.lower() in ('yes', 'true', 't', 'y', '1'):

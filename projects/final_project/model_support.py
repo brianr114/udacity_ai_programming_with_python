@@ -6,7 +6,8 @@ from torch import nn
 from torch import optim
 from torchvision import datasets, transforms, models
 from collections import OrderedDict
-
+from PIL import Image
+from copy import copy
 
 
 # Define your transforms for the training, validation, and testing sets
@@ -15,13 +16,14 @@ train_transforms = transforms.Compose([transforms.RandomRotation(30),
                                         transforms.RandomHorizontalFlip(),
                                         transforms.ToTensor(),
                                         transforms.Normalize([.485, .456, .406],
-                                                            [.229, .224, .225])])
+                                                             [.229, .224, .225])])
 
 validation_test_transforms = transforms.Compose([transforms.Resize(255),
                                                     transforms.CenterCrop(224),
                                                     transforms.ToTensor(),
                                                     transforms.Normalize([.485, .456, .406],
-                                                                        [.229, .224, .225])])
+                                                                         [.229, .224, .225])])
+
 
 def load_train_data(data_dir, batch_size):
     # Load the datasets with ImageFolder
@@ -37,6 +39,7 @@ def load_train_data(data_dir, batch_size):
     data['validate'] = torch.utils.data.DataLoader(validate_data, batch_size=batch_size)
     return data, train_data.class_to_idx
 
+
 def load_test_data(data_dir, batch_size):
     # Load the datasets with ImageFolder
     test_dir = data_dir + '/test'
@@ -45,6 +48,7 @@ def load_test_data(data_dir, batch_size):
 
     # Using the image datasets and the trainforms, define the dataloaders
     return torch.utils.data.DataLoader(test_data, batch_size=batch_size)
+
 
 def train(model, optimizer, criterion, epochs, device, data):
     # Put model in training mode
@@ -94,7 +98,7 @@ def train(model, optimizer, criterion, epochs, device, data):
                     equals = top_class == labels.view(*top_class.shape)
                     accuracy += torch.mean(equals.type(torch.FloatTensor)).item()
 
-            print(f"Epoch {e+1:0>2d}/{epochs:0>2d} |",
+            print(f"Epoch: {e+1:0>2d}/{epochs:0>2d} |",
                   f"Training Loss: {train_loss/len(data['train']):.3f} |",
                   f"Validation Loss: {validation_loss/len(data['validate']):.3f} |",
                   f"Accuracy: {accuracy / len(data['validate']):.3f} |",
@@ -107,8 +111,9 @@ def train(model, optimizer, criterion, epochs, device, data):
             if (accuracy / len(data['validate'])) > .8:
                 break;
 
+
 # Save the checkpoint 
-def save_model(file_path, model, hidden_layers, class_to_idx, optimizer, epochs):
+def save_model(file_path, model, hidden_layers, optimizer, epochs):
     """
     Saves the model for future retrieval
     Inputs: Filepath: Path and name to save file
@@ -125,14 +130,13 @@ def save_model(file_path, model, hidden_layers, class_to_idx, optimizer, epochs)
                   'classifier': model.classifier,
                   'hidden_layers': hidden_layers,
                   'state_dict': model.state_dict(),
-                  'class_to_idx': class_to_idx,
+                  'class_to_idx': model.class_to_idx,
                   'optimizer': optimizer.state_dict(),
                   'epochs': epochs}
 
     torch.save(checkpoint, file_path)
 
 
-    # TODO: Write a function that loads a checkpoint and rebuilds the model
 def freeze_model_features(model):
     """
     Freeze the features of input model
@@ -166,6 +170,7 @@ def create_network(hidden_layers):
     return network
        
 
+
 def create_model(arch='densenet121', hidden_layers=None, lr=.003, class_to_idx=None):
     """
     Creates a model with specified architecture, number of hidden layers, learning rate,
@@ -178,30 +183,33 @@ def create_model(arch='densenet121', hidden_layers=None, lr=.003, class_to_idx=N
     Outputs: The fully configured model, optimizer, and criterion
     
     """
+    # Create by-value copy of hidden layers, since hidden_layers is passed by reference
+    hl = copy(hidden_layers)
+    
     # Load pre-trained model and replace classifier with custom classifier
     if arch == 'vgg16':
         model = models.vgg16(pretrained=True)
         
         # In features: 25088, Output 102 classes
-        if hidden_layers == None:
-            hidden_layers = [25088, 4096, 102] # Default configuration
+        if hl == None:
+            hl = [25088, 4096, 102] # Default configuration
         else:
-            hidden_layers.insert(0, 25088)
-            hidden_layers.append(102)
+            hl.insert(0, 25088)
+            hl.append(102)
             
-        model.classifier = nn.Sequential(OrderedDict(create_network(hidden_layers)))
+        model.classifier = nn.Sequential(OrderedDict(create_network(hl)))
         
     elif arch == 'densenet121':
         model = models.densenet121(pretrained=True)
         
         # In features: 1024, Output 102 classes
-        if hidden_layers == None:
-            hidden_layers = [1024, 512, 102]  # Default configuration
+        if hl == None:
+            hl = [1024, 512, 102]  # Default configuration
         else:
-            hidden_layers.insert(0, 1024)
-            hidden_layers.append(102)
+            hl.insert(0, 1024)
+            hl.append(102)
             
-        model.classifier = nn.Sequential(OrderedDict(create_network(hidden_layers)))
+        model.classifier = nn.Sequential(OrderedDict(create_network(hl)))
     
     # Freeze model features
     freeze_model_features(model)
@@ -217,6 +225,7 @@ def create_model(arch='densenet121', hidden_layers=None, lr=.003, class_to_idx=N
     
     return model, optimizer, criterion
  
+ 
 def load_model(filepath, lr=.003):
     """
     Loads a previously saved model.
@@ -231,10 +240,8 @@ def load_model(filepath, lr=.003):
     model, optimizer, criterion = create_model(checkpoint['arch'], checkpoint['hidden_layers'], lr)
     
     # Load model parameters from checkpoint file
-
     model.load_state_dict(checkpoint['state_dict'])
     model.class_to_idx = checkpoint['class_to_idx']
-
     
     # Load optimizer parameters
     optimizer.load_state_dict(checkpoint['optimizer'])
@@ -242,3 +249,77 @@ def load_model(filepath, lr=.003):
     epochs = checkpoint['epochs']
     
     return model, optimizer, criterion
+    
+def process_image(image):
+    ''' Scales, crops, and normalizes a PIL image for a PyTorch model,
+        returns an Pytorch tensor
+    '''
+    # Calculate aspect ratio of image
+    width, height = image.size
+    ar = height / float(width)
+    
+    # Calculate dimensions of scaled image
+    if (height > width):
+        resize_dims = (256, int(round(256 * ar)))
+    else:
+        resize_dims = (int(round(256 / ar)), 256)
+    
+    # Center of the "crop box"
+    cc = 112
+    
+    # Calculate crop box (224 x 224)
+    crop_box = (int(resize_dims[0] / 2 - cc), int(resize_dims[1] / 2 - cc),\
+                int(resize_dims[0] / 2 + cc), int(resize_dims[1] / 2 + cc))
+
+    # Resize to dimensions
+    image.resize(resize_dims)
+    
+    # Crop to size of crop box and normalize to 0-1
+    np_image = np.array(image.crop(crop_box)) / 255
+    
+    # Normalize color channels
+    mean = np.array([.485, .456, .406])
+    sd = np.array([.229, .224, .225])
+    np_image = (np_image - mean) / sd
+    
+    # Transpose
+    np_image = np_image.transpose((2, 0, 1))
+    
+    # Convert to FloatTensor type before returning
+    return torch.from_numpy(np_image).type(torch.FloatTensor)
+
+
+def predict(image_path, model, topk, device):
+    ''' Predict the class (or classes) of an image using a trained deep learning model.
+    '''
+    
+    # Load image and process
+    image = process_image(Image.open(image_path))
+    
+    # Send model to target device and put into eval mode
+    model = model.to(device)
+    model.eval()
+    
+    # Send image to target device modify dimensions
+    # Ref: https://knowledge.udacity.com/questions/186897
+    image.unsqueeze_(0)
+    image = image.to(device)
+
+    # Disable gradient calculation prior to running model
+    with torch.no_grad(): 
+        # Calculate class probabilities and determine "matches"
+        class_p = torch.exp(model.forward(image))
+   
+    # Return model to training mode
+    model.train()
+    
+    # Compute top n classes, return them to the cpu, convert to numpy array, and finally flatten
+    probs, classes = class_p.topk(topk, dim=1) 
+    probs, classes = probs.to('cpu'), classes.to('cpu')
+    probs, classes = probs.numpy().flatten(), classes.numpy().flatten()
+    
+    # Ref: https://knowledge.udacity.com/questions/259422
+    idx_to_class = {k:i for i, k in model.class_to_idx.items()}
+    classes = [idx_to_class[i] for i in classes]
+
+    return probs, classes

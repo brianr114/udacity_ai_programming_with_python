@@ -1,5 +1,4 @@
 import torch
-import helper_functions
 import parse_args
 import model_support
 
@@ -9,7 +8,7 @@ def main():
     args.gpu = parse_args.string_to_bool(args.gpu)
     args.hidden_layers = [int(i) for i in args.hidden_layers.split(',')]
     
-     # Determine device for model processing
+    # Determine device for model processing
     device = torch.device('cuda' if torch.cuda.is_available() and args.gpu else 'cpu')
 
     # Load training data
@@ -20,9 +19,9 @@ def main():
 
     # Train the model
     model_support.train(model, optimizer, criterion, args.epochs, device, data)
-
+    
     # Save the model
-    model_support.save_model(args.model_checkpoint, model, args.hidden_layers, class_to_idx, optimizer, args.epochs)
+    model_support.save_model(args.model_checkpoint, model, args.hidden_layers, optimizer, args.epochs)
       
    
 if __name__ == "__main__":
