@@ -21,7 +21,7 @@ def main():
     model_support.train(model, optimizer, criterion, args.epochs, device, data)
     
     # Save the model
-    model_support.save_model(args.model_checkpoint, model, args.hidden_layers, optimizer, args.epochs)
+    model_support.save_model(args, model, optimizer)
       
    
 if __name__ == "__main__":

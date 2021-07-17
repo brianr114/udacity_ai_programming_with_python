@@ -141,7 +141,7 @@ def train(model, optimizer, criterion, epochs, device, data):
 
 
 # Save the checkpoint 
-def save_model(file_path, model, hidden_layers, optimizer, epochs):
+def save_model(args, model, optimizer):
     """
     Saves the model for future retrieval
     Inputs: Filepath: Path and name to save file
@@ -154,13 +154,13 @@ def save_model(file_path, model, hidden_layers, optimizer, epochs):
     Outputs: Saves a model checkpoint file at the location specified
             
     """
-    checkpoint = {'arch': 'densenet121',
+    checkpoint = {'arch': args.arch,
                   'classifier': model.classifier,
-                  'hidden_layers': hidden_layers,
+                  'hidden_layers': args.hidden_layers,
                   'state_dict': model.state_dict(),
                   'class_to_idx': model.class_to_idx,
                   'optimizer': optimizer.state_dict(),
-                  'epochs': epochs}
+                  'epochs': args.epochs}
 
     torch.save(checkpoint, file_path)
 
@@ -172,8 +172,8 @@ def freeze_model_features(model):
     Outputs: None
     """
     # Freeze model features
-    for feature in model.features:
-        feature.requires_grad = False
+    for param in model.features.parameters:
+        param.requires_grad = False
 
 
 def create_network(hidden_layers):
