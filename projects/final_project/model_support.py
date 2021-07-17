@@ -26,6 +26,14 @@ validation_test_transforms = transforms.Compose([transforms.Resize(255),
 
 
 def load_train_data(data_dir, batch_size):
+    """
+        Loads test images and returns a dataset of images for training and validation
+    Inputs:
+        data_dir: Root directory of images folder
+        batch_size: Number of images in batch returned by data loader
+    Outputs:
+        Dictionary with training data and validatoin data
+    """
     # Load the datasets with ImageFolder
     train_dir = data_dir + '/train'
     valid_dir = data_dir + '/valid'
@@ -41,6 +49,14 @@ def load_train_data(data_dir, batch_size):
 
 
 def load_test_data(data_dir, batch_size):
+    """
+    Loads test images and returns a dataset of images for testing
+    Inputs:
+        data_dir: Root directory of images folder
+        batch_size: Number of images in batch returned by data loader
+    Outputs:
+        Test data loader
+    """
     # Load the datasets with ImageFolder
     test_dir = data_dir + '/test'
 
@@ -51,6 +67,18 @@ def load_test_data(data_dir, batch_size):
 
 
 def train(model, optimizer, criterion, epochs, device, data):
+    """
+    Trains the model and tests against a validation set of data
+    Inputs: 
+        Model: A torchvision model
+        Optimizer: Definition of optimizer function
+        Criterion: Algorithm used to calculate loss
+        Epochs: Number of training loops to execute
+        Device: Device ['cuda', 'cpu'] on which to implement model
+        Data: Dictionary of training images and validation images
+    Outputs:
+        None
+    """
     # Put model in training mode
     model.train()
 
