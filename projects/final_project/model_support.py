@@ -162,7 +162,7 @@ def save_model(args, model, optimizer):
                   'optimizer': optimizer.state_dict(),
                   'epochs': args.epochs}
 
-    torch.save(checkpoint, file_path)
+    torch.save(checkpoint, args.model_checkpoint)
 
 
 def freeze_model_features(model):
@@ -172,7 +172,7 @@ def freeze_model_features(model):
     Outputs: None
     """
     # Freeze model features
-    for param in model.features.parameters:
+    for param in model.features.parameters():
         param.requires_grad = False
 
 

@@ -9,7 +9,7 @@ def get_training_args():
 
     parser.add_argument('--arch', type = str, default = 'densenet121', help = "CNN Model Architecture: default='densenet121' or 'vgg16'")
     parser.add_argument('--lr', type = float, default = .003, help = 'Learning rate for optimizer: default=.003')
-    parser.add_argument('--hidden_layers', type = str, default = '512', help = 'Model hidden layers (comma separated list): default=512')
+    parser.add_argument('--hidden_layers', type = string_to_int_list, default = '512', help = 'Model hidden layers (comma separated list): default=512')
     parser.add_argument('--epochs', type = int, default = 10, help = 'Number of training epochs: default=10')
     parser.add_argument('--gpu', type = string_to_bool, default = 'True', help = 'Use GPU if available: default=True')
     parser.add_argument('--image_root', type = str, default = 'flowers', help = "Root directory of images folder: default='flowers'")
@@ -44,3 +44,6 @@ def string_to_bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+        
+def string_to_int_list(v):
+    return [int(i) for i in v.split(',')]

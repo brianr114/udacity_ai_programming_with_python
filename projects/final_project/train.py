@@ -5,9 +5,7 @@ import model_support
 def main():
     # Read command line arguments and parse/format as needed
     args = parse_args.get_training_args()
-    args.gpu = parse_args.string_to_bool(args.gpu)
-    args.hidden_layers = [int(i) for i in args.hidden_layers.split(',')]
-    
+        
     # Determine device for model processing
     device = torch.device('cuda' if torch.cuda.is_available() and args.gpu else 'cpu')
 
